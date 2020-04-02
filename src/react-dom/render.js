@@ -73,12 +73,6 @@ function createComponent(component, props) {
  * @param {Object} props
  */
 function setComponentProps(component, props) {
-  // React v16 已经不建议使用这两个生命周期方法
-  if (!component.base) {
-    if (component.componentWillMount) component.componentWillMount();
-  } else if (component.componentWillReceiveProps) {
-    component.componentWillReceiveProps(props);
-  }
   component.props = props;
   renderComponent(component);
 }
@@ -86,10 +80,6 @@ function setComponentProps(component, props) {
 export function renderComponent(component) {
   let base;
   const renderer = component.render();
-  // React v16 不建议使用本方法
-  if (component.base && component.componentWillUpdate) {
-    component.componentWillUpdate();
-  }
   base = _render(renderer);
   if (component.base) {
     if (component.componentDidUpdate) {
