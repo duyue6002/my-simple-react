@@ -7,6 +7,7 @@ import ReactDOM from "./reactdom";
 function tick() {
   const element = (
     <div>
+      <input type="checkbox" checked={false}></input>
       <h1>Hello World</h1>
       <h2>It is {new Date().toLocaleTimeString()}</h2>
     </div>
