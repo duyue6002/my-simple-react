@@ -1,5 +1,5 @@
 import React from "./react";
-import ReactDOM from "./react-dom/index";
+import ReactDOM from "./react-dom";
 
 // Notes: 为什么看上去没用到React还需要调用呢？
 // JSX 语法糖会把“DOM标签”转化成虚拟DOM对象
