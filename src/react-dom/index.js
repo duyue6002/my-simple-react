@@ -1,12 +1,28 @@
 /**
  *
- * @param {String|Object} vnode
+ * @param {*} vnode
  * @param {HTMLElement} container
  */
 function render(vnode, container) {
+  return container.appendChild(_render(vnode));
+}
+/**
+ *
+ * @param {*} vnode
+ */
+function _render(vnode) {
+  if (
+    typeof vnode === "undefined" ||
+    typeof vnode === "boolean" ||
+    vnode === null
+  )
+    vnode = "";
+  if (typeof vnode === "number") vnode = String(vnode);
   if (typeof vnode === "string") {
     const textNode = document.createTextNode(vnode);
-    return container.appendChild(textNode);
+    return textNode;
+  }
+  if (typeof vnode === "function") {
   }
   const dom = document.createElement(vnode.tag);
   if (vnode.attrs) {
@@ -19,7 +35,7 @@ function render(vnode, container) {
     });
   }
   vnode.children.forEach(child => render(child, dom));
-  return container.appendChild(dom);
+  return dom;
 }
 
 /**
