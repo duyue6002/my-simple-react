@@ -34,3 +34,19 @@ class Counter extends Component {
 }
 
 ReactDOM.render(<Counter />, document.getElementById("root"));
+
+// function Welcome(props) {
+//   return <h1>Hello, {props.name}</h1>;
+// }
+
+// function App() {
+//   return (
+//     <div>
+//       <Welcome name="Leia" />
+//       <Welcome name="Luke" />
+//       <Welcome name="Solo" />
+//     </div>
+//   );
+// }
+
+// ReactDOM.render(<App />, document.getElementById("root"));

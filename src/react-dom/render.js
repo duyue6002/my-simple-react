@@ -11,7 +11,8 @@ export function render(vnode, container) {
 }
 /**
  *
- * @param {*} vnode
+ * @param {*} vnode Virtual DOM
+ * @return {HTMLElement}
  */
 function _render(vnode) {
   if (
@@ -28,7 +29,7 @@ function _render(vnode) {
   if (typeof vnode.tag === "function") {
     const component = createComponent(vnode.tag, vnode.attrs);
     setComponentProps(component, vnode.attrs);
-    return component.base;
+    return component.dom;
   }
   const dom = document.createElement(vnode.tag);
   if (vnode.attrs) {
@@ -60,6 +61,7 @@ function createComponent(component, props) {
   else {
     instance = new Component(props);
     instance.constructor = component;
+    // 增加render方法，调用构造函数，返回JSX编译后的虚拟DOM
     instance.render = function() {
       return this.constructor(props);
     };
@@ -73,24 +75,44 @@ function createComponent(component, props) {
  * @param {Object} props
  */
 function setComponentProps(component, props) {
+  // React v16不建议使用以下生命周期方法
+  if (!component.dom) {
+    if (component.componentWillMount) component.componentWillMount();
+  } else if (component.componentWillReceiveProps) {
+    component.componentWillReceiveProps(props);
+  }
   component.props = props;
   renderComponent(component);
 }
 
+/**
+ *
+ * @param {Object} component Component实例
+ */
 export function renderComponent(component) {
-  let base;
-  const renderer = component.render();
-  base = _render(renderer);
-  if (component.base) {
+  let dom;
+  const virtualDOM = component.render();
+  // 已存在真实DOM，非首次挂载，启动WillUpdate生命周期方法
+  if (component.dom && component.componentWillUpdate) {
+    component.componentWillUpdate();
+  }
+  // 即将挂载/更新后的真实DOM
+  dom = _render(virtualDOM);
+  // 如果已经存在真实DOM，启动DidUpdate的生命周期方法
+  if (component.dom) {
     if (component.componentDidUpdate) {
       component.componentDidUpdate();
     }
-  } else if (component.componentDidMount) {
+  }
+  // 首次挂载
+  else if (component.componentDidMount) {
     component.componentDidMount();
   }
-  if (component.base && component.base.parentNode) {
-    component.base.parentNode.replaceChild(base, component.base);
+  // 将父节点上的本节点替换成新的DOM
+  if (component.dom && component.dom.parentNode) {
+    component.dom.parentNode.replaceChild(dom, component.dom);
   }
-  component.base = base;
-  base._component = component;
+  // 储存当前的DOM元素
+  component.dom = dom;
+  dom._component = component;
 }
