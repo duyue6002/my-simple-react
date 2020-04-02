@@ -1,3 +1,4 @@
+import setAttribute from "./dom";
 import Component from "../react/component";
 
 /**
@@ -24,9 +25,9 @@ function _render(vnode) {
     const textNode = document.createTextNode(vnode);
     return textNode;
   }
-  if (typeof vnode === "function") {
+  if (typeof vnode.tag === "function") {
     const component = createComponent(vnode.tag, vnode.attrs);
-    setComponentProps(vnode.tag, vnode.attrs);
+    setComponentProps(component, vnode.attrs);
     return component.base;
   }
   const dom = document.createElement(vnode.tag);
@@ -41,45 +42,6 @@ function _render(vnode) {
   }
   vnode.children.forEach(child => render(child, dom));
   return dom;
-}
-
-/**
- *
- * @param {HTMLElement} dom
- * @param {String} key
- * @param {String|Object} value
- */
-function setAttribute(dom, key, value) {
-  if (key === "className") {
-    key = "class";
-  }
-  if (/on\w+/.test(key)) {
-    key = key.toLowerCase();
-    dom[key] = value || "";
-  } else if (key === "style") {
-    // 可以接受对象和字符串
-    if (!value || typeof value === "string") {
-      dom.style.cssText = value || "";
-    } else if (value && typeof value === "object") {
-      // 避免是null
-      Object.keys(value).forEach(styleAttr => {
-        // style={{width: 20}}
-        dom.style[styleAttr] =
-          typeof value[styleAttr] === "number"
-            ? value[styleAttr] + "px"
-            : value[styleAttr];
-      });
-    }
-  } else {
-    if (key !== "class" && key in dom) {
-      dom[key] = value || "";
-    }
-    if (value) {
-      dom.setAttribute(key, value);
-    } else {
-      dom.removeAttribute(key);
-    }
-  }
 }
 
 /**
@@ -105,3 +67,40 @@ function createComponent(component, props) {
   return instance;
 }
 
+/**
+ *
+ * @param {Object} component
+ * @param {Object} props
+ */
+function setComponentProps(component, props) {
+  // React v16 已经不建议使用这两个生命周期方法
+  if (!component.base) {
+    if (component.componentWillMount) component.componentWillMount();
+  } else if (component.componentWillReceiveProps) {
+    component.componentWillReceiveProps(props);
+  }
+  component.props = props;
+  renderComponent(component);
+}
+
+export function renderComponent(component) {
+  let base;
+  const renderer = component.render();
+  // React v16 不建议使用本方法
+  if (component.base && component.componentWillUpdate) {
+    component.componentWillUpdate();
+  }
+  base = _render(renderer);
+  if (component.base) {
+    if (component.componentDidUpdate) {
+      component.componentDidUpdate();
+    }
+  } else if (component.componentDidMount) {
+    component.componentDidMount();
+  }
+  if (component.base && component.base.parentNode) {
+    component.base.parentNode.replaceChild(base, component.base);
+  }
+  component.base = base;
+  base._component = component;
+}
