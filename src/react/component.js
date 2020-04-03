@@ -1,4 +1,4 @@
-import { renderComponent } from "../react-dom/render";
+import { renderComponent } from "../react-dom/diff";
 class Component {
   constructor(props = {}) {
     this.state = {};

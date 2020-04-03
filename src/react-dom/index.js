@@ -1,9 +1,9 @@
 import { render } from "./render";
 
 const ReactDOM = {
-  render: (vnode, container) => {
+  render: (vnode, container, dom) => {
     container.innerHTML = "";
-    return render(vnode, container);
+    return render(vnode, container, dom);
   }
 };
 
