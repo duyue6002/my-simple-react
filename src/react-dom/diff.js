@@ -110,62 +110,72 @@ function diffAttributes(dom, vnode) {
 
 /**
  *
- * @param {HTMLElement} dom
- * @param {Array} vchildren
+ * @param {HTMLElement} dom 真实DOM
+ * @param {Array} vchildren VDOM的children[]
  */
 function diffChildren(dom, vchildren) {
-  const domChildren = dom.childNodes;
-  const domNoKeyChildren = [];
-  let domKeyChildren = {};
-
-  // 把真实DOM的子节点分为有key的节点和没有key的节点
-  for (let i = 0; i < domChildren.length; i++) {
-    const domChild = domChildren[i];
-    const domKey = domChild.key;
-    if (domKey) {
-      domKeyChildren[domKey] = domChild;
-    } else {
-      domNoKeyChildren.push(domChild);
-    }
-  }
-
   if (vchildren && vchildren.length > 0) {
-    let min = 0;
+    const domChildren = dom.childNodes;
+    // 将有key值和没有key值的节点分开处理
+    let domNoKeyChildren = [];
+    let domKeyChildren = {};
+
+    for (let i = 0; i < domChildren.length; i++) {
+      const domChild = domChildren[i];
+      if (domChild.key) {
+        domKeyChildren[domChild.key] = domChild;
+      } else {
+        domNoKeyChildren.push(domChild);
+      }
+    }
+
+    let count = 0; // 没有key的子节点已diff的个数
     let domNoKeyChildrenLen = domNoKeyChildren.length;
     for (let i = 0; i < vchildren.length; i++) {
       const vchild = vchildren[i];
       const vKey = vchild.key;
-      let newChild = void 0;
-      // 当前虚拟DOM有key
+      // 新的子节点
+      let child = void 0;
+      // NOTE 先把原DOM的对应子节点赋给child
+      // 分为有key和无key两种节点
       if (vKey) {
-        // 真实DOM与虚拟DOM的子节点key相同
+        // 原DOM子节点与虚拟DOM的子节点key相同
+        // child赋值为原DOM对应的子节点，以便后面使用
         if (domKeyChildren[vKey]) {
-          newChild = domKeyChildren[vKey];
+          child = domKeyChildren[vKey];
           domKeyChildren[vKey] = void 0;
         }
       }
-      // 当前虚拟DOM没有key
-      else if (min < domNoKeyChildrenLen) {
-        for (let j = min; j < domNoKeyChildrenLen; j++) {
+      // 当前虚拟DOM没有key，且没有diff的节点比原DOM子节点少
+      else if (count < domNoKeyChildrenLen) {
+        for (let j = count; j < domNoKeyChildrenLen; j++) {
           let oldDomChild = domNoKeyChildren[j];
+          // 是同类型的节点才赋值，才需要diff，非同类型的在下面diffNode会创建新的节点
           if (oldDomChild && isSameNodeType(oldDomChild, vchild)) {
-            newChild = oldDomChild;
+            child = oldDomChild;
             oldDomChild = void 0;
             if (j === domNoKeyChildrenLen - 1) domNoKeyChildrenLen--;
-            if (j === min) min++;
+            if (j === count) count++;
             break;
           }
         }
       }
-      newChild = diffNode(newChild, vchild);
-      const f = domChildren[i];
-      if (newChild && newChild !== dom && newChild !== f) {
-        if (!f) {
-          dom.appendChild(newChild);
-        } else if (newChild === f.nextSibling) {
-          removeNode(f);
-        } else {
-          dom.insertBefore(newChild, f);
+      // diff后更新的子节点DOM
+      child = diffNode(child, vchild);
+      // i是已vchildren为基础的，ref是原DOM与vchildren同index下的子节点
+      const ref = domChildren[i];
+      if (child && child !== dom && child !== ref) {
+        // ref 是 undefined，vchildren比domChildren要多，在原DOM下增加当前子节点
+        if (!ref) {
+          dom.appendChild(child);
+        }
+        // 当前子节点是ref的下一个，存在于原DOM上，移除ref
+        else if (child === ref.nextSibling) {
+          removeNode(ref);
+        }
+        // 当前子节点需要加在ref的前面
+        else {
+          dom.insertBefore(child, ref);
         }
       }
     }
