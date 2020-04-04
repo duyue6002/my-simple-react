@@ -17,6 +17,14 @@ class Counter extends Component {
 
   componentDidMount() {
     console.log("mount");
+    for (let i = 0; i < 100; i++) {
+      // this.setState({ num: this.state.num + 1 });
+      // console.log(this.state.num);
+      this.setState(prevState => {
+        console.log(prevState.num);
+        return { num: prevState.num + 1 };
+      });
+    }
   }
 
   onClick() {
@@ -34,19 +42,3 @@ class Counter extends Component {
 }
 
 ReactDOM.render(<Counter />, document.getElementById("root"));
-
-// function Welcome(props) {
-//   return <h1>Hello, {props.name}</h1>;
-// }
-
-// function App() {
-//   return (
-//     <div>
-//       <Welcome name="Leia" />
-//       <Welcome name="Luke" />
-//       <Welcome name="Solo" />
-//     </div>
-//   );
-// }
-
-// ReactDOM.render(<App />, document.getElementById("root"));

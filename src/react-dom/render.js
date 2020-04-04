@@ -1,5 +1,3 @@
-import setAttribute from "./dom";
-import Component from "../react/component";
 import diff from "./diff";
 
 /**
