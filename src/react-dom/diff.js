@@ -1,4 +1,6 @@
 import setAttribute from "./dom";
+import { Component } from "../react";
+
 /**
  *
  * @param {HTMLElement} dom
@@ -305,7 +307,6 @@ export function renderComponent(component) {
     component.componentWillUpdate();
   }
   // 即将挂载/更新后的真实DOM
-  // dom = _render(virtualDOM);
   dom = diffNode(component.dom, virtualDOM);
   // 如果已经存在真实DOM，启动DidUpdate的生命周期方法
   if (component.dom) {
@@ -317,10 +318,6 @@ export function renderComponent(component) {
   else if (component.componentDidMount) {
     component.componentDidMount();
   }
-  // // 将父节点上的本节点替换成新的DOM
-  // if (component.dom && component.dom.parentNode) {
-  //   component.dom.parentNode.replaceChild(dom, component.dom);
-  // }
   // 储存当前的DOM元素
   component.dom = dom;
   dom._component = component;

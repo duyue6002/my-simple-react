@@ -1,13 +1,7 @@
-function createElement(tag, attrs, ...children) {
-  return {
-    tag,
-    attrs,
-    children
-  };
-}
+import createElement from "./element";
+import Component from "./component";
 
-const React = {
-  createElement
+export default {
+  createElement,
+  Component
 };
-
-export default React;

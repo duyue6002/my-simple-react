@@ -1,8 +1,7 @@
 import React from "./react";
 import ReactDOM from "./react-dom";
-import Component from "./react/component";
 
-class Counter extends Component {
+class Counter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
